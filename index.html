@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mario_Moda_Gold_Shop</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Banner top full width -->
+  <div class="top-banner">
+    Benvenuto su <strong>Mario_Moda_Gold_Shop</strong>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-left">
+      <a class="brand" href="#home" data-route="home" aria-label="Vai alla Home">
+        <!-- Logo: sostituisci logo.png con la tua immagine -->
+        <img class="brand-logo" src="img/logo.jpeg" alt="Logo Mario Moda Gold Shop" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
+        <span class="brand-fallback" style="display:none;">Mario_Moda_Gold_Shop</span>
+      </a>
+    </div>
+
+    <div class="header-center">
+      <div class="search-wrap">
+        <input id="searchInput" type="search" placeholder="Cerca prodotti (scarpe, borse, camicia...)" autocomplete="off" />
+        <button id="clearSearchBtn" class="btn btn-ghost" type="button" title="Svuota ricerca">✕</button>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button id="cartBtn" class="cart-btn" type="button" aria-label="Apri carrello">
+        <span class="cart-icon">🛒</span>
+        <span>Carrello</span>
+        <span id="cartCount" class="cart-count">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="#home" data-route="home" class="nav-link is-active">Home</a>
+      <a href="#catalogo" data-route="catalogo" class="nav-link">Catalogo</a>
+      <a href="#contatti" data-route="contatti" class="nav-link">Contatti</a>
+      <a href="#chi-siamo" data-route="chi-siamo" class="nav-link">Chi siamo</a>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="container">
+
+    <!-- HOME (stile vetrina "hero + highlights" originale) -->
+    <section id="home" class="page is-visible">
+      <div class="hero">
+        <div class="hero-text">
+          <h1>Street • Moda • Accessori</h1>
+          <p>
+            Scopri le migliori occasioni su scarpe, borse, capi e accessori.
+            Selezione aggiornata e assistenza rapida su WhatsApp.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#catalogo" data-route="catalogo">Vai al Catalogo</a>
+            <button class="btn btn-secondary" type="button" id="homeWhatsBtn">Contattaci su WhatsApp</button>
+          </div>
+          <div class="hero-badges">
+            <span class="badge">Qualità</span>
+            <span class="badge">Prezzi competitivi</span>
+            <span class="badge">Assistenza veloce</span>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-card-inner">
+            <h3>In evidenza</h3>
+            <p>Prodotti consigliati del momento (demo).</p>
+            <div id="homeFeatured" class="featured-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <h2>Categorie</h2>
+        <p>Seleziona una categoria e inizia a scoprire i prodotti.</p>
+      </div>
+      <div id="homeCategories" class="category-chips"></div>
+
+      <div class="section-title">
+        <h2>Perché scegliere Mario_Moda_Gold_Shop</h2>
+        <p>Un’esperienza d’acquisto semplice: scegli, metti nel carrello e invia l’ordine su WhatsApp.</p>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>Affidabilità</h3>
+          <p>Gestione ordini chiara e assistenza sempre disponibile.</p>
+        </div>
+        <div class="info-card">
+          <h3>Qualità</h3>
+          <p>Selezione attenta dei prodotti e focus sui dettagli.</p>
+        </div>
+        <div class="info-card">
+          <h3>Occhio al prezzo</h3>
+          <p>Offerte e prezzi competitivi su tanti articoli.</p>
+        </div>
+        <div class="info-card">
+          <h3>Ordine su WhatsApp</h3>
+          <p>Checkout rapido: invii il carrello direttamente in chat.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATALOGO -->
+    <section id="catalogo" class="page">
+      <div class="catalog-layout">
+        <aside class="catalog-sidebar">
+          <h2>Catalogo</h2>
+          <p class="muted">Filtra per categoria o cerca dalla barra in alto.</p>
+
+          <div class="sidebar-block">
+            <h3>Categorie</h3>
+            <div id="categoryList" class="category-list"></div>
+          </div>
+
+          <div class="sidebar-block">
+            <h3>Filtri</h3>
+            <label class="checkbox">
+              <input id="onlyAvailableChk" type="checkbox" />
+              Mostra solo disponibili
+            </label>
+            <button id="resetFiltersBtn" class="btn btn-ghost full" type="button">Reset filtri</button>
+          </div>
+        </aside>
+
+        <section class="catalog-content">
+          <div class="catalog-top">
+            <div>
+              <h2 id="catalogTitle">Tutti i prodotti</h2>
+              <p id="catalogSubtitle" class="muted">Risultati: <span id="resultCount">0</span></p>
+            </div>
+
+            <div class="sort-wrap">
+              <label for="sortSelect" class="muted">Ordina:</label>
+              <select id="sortSelect">
+                <option value="default">Predefinito</option>
+                <option value="priceAsc">Prezzo: crescente</option>
+                <option value="priceDesc">Prezzo: decrescente</option>
+                <option value="nameAsc">Nome: A-Z</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="productGrid" class="product-grid"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- CONTATTI -->
+    <section id="contatti" class="page">
+      <div class="page-card">
+        <h2>Contatti</h2>
+        <p>
+          Scrivimi per ulteriori info su spedizione e altro contattare il:
+          <strong>3510901180</strong>
+        </p>
+        <button id="contactsWhatsBtn" class="btn btn-primary" type="button">Apri WhatsApp</button>
+      </div>
+    </section>
+
+    <!-- CHI SIAMO -->
+    <section id="chi-siamo" class="page">
+      <div class="page-card">
+        <h2>Chi siamo</h2>
+        <ul class="good-list">
+          <li><strong>Affidabilità</strong>: ordini gestiti con attenzione e comunicazione chiara.</li>
+          <li><strong>Qualità</strong>: selezione curata e focus su materiali e finiture.</li>
+          <li><strong>Occhio al prezzo</strong>: equilibrio tra qualità e convenienza.</li>
+          <li><strong>Assistenza</strong>: supporto rapido su WhatsApp per taglie, disponibilità e spedizioni.</li>
+          <li><strong>Semplicità</strong>: carrello → invio ordine su WhatsApp in un click.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- CART DRAWER -->
+  <div id="overlay" class="overlay hidden"></div>
+
+  <aside id="cartDrawer" class="cart-drawer hidden" aria-hidden="true">
+    <div class="cart-header">
+      <h3>Il tuo carrello</h3>
+      <button id="closeCartBtn" class="btn btn-ghost" type="button" aria-label="Chiudi carrello">✕</button>
+    </div>
+
+    <div id="cartItems" class="cart-items"></div>
+
+    <div class="cart-footer">
+      <div class="cart-totals">
+        <span class="muted">Totale</span>
+        <strong id="cartTotal">€0.00</strong>
+      </div>
+
+      <button id="checkoutBtn" class="btn btn-primary full" type="button">
+        Completa su WhatsApp
+      </button>
+      <button id="clearCartBtn" class="btn btn-ghost full" type="button">
+        Svuota carrello
+      </button>
+
+      <p class="tiny muted">
+        Nota: il checkout invia un messaggio WhatsApp con il contenuto del carrello.
+      </p>
+    </div>
+  </aside>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="muted">© <span id="year"></span> Mario_Moda_Gold_Shop</span>
+      <a class="muted" href="#contatti" data-route="contatti">Contatti</a>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
