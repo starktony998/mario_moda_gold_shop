@@ -1,13 +1,14 @@
 :root{
-  --bg:#0f1115;
-  --card:#151926;
-  --card2:#101420;
-  --text:#e8ecf1;
-  --muted:#aab3c2;
-  --border:rgba(255,255,255,0.10);
-  --accent:#ffd24a;
-  --accent2:#7dd3fc;
-  --danger:#ff5c7a;
+  --bg:#ffffff;                 /* sfondo bianco */
+  --card:#ffffff;               /* card bianche */
+  --card2:#fafafa;              /* leggero contrasto */
+  --text:#111111;               /* testo nero */
+  --muted:#666666;
+  --border:#d4af37;             /* ORO */
+  --accent:#d4af37;             /* ORO principale */
+  --accent2:#b8962e;            /* oro scuro */
+  --danger:#c62828;
+}
 
   /* 🔧 TUNING RAPIDO */
   --banner-h: 44px;          /* altezza banner sticky */
@@ -556,6 +557,7 @@ select{
 
   .cart-btn{ max-width: 100%; }
 }
+
 
 
 
