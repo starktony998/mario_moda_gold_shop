@@ -11,8 +11,8 @@
 
   /* 🔧 TUNING RAPIDO */
   --banner-h: 44px;          /* altezza banner sticky */
-  --logo-h: 180px;            /* altezza logo nell’header */
-  --search-w: 420px;         /* LARGHEZZA barra ricerca (metti qui la tua) */
+  --logo-h: 90px;            /* altezza logo nell’header */
+  --search-w: 300px;         /* LARGHEZZA barra ricerca (metti qui la tua) */
   --header-side: 240px;      /* larghezza colonne laterali */
 }
 
@@ -556,6 +556,7 @@ select{
 
   .cart-btn{ max-width: 100%; }
 }
+
 
 
 
