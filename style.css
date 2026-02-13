@@ -57,9 +57,13 @@ a{ color:inherit; text-decoration:none; }
   top:var(--banner-h);
   z-index:40;
 
-  /* evita sbordi (logo troppo grande, ecc.) */
-  min-height: calc(var(--logo-h) + 24px);
+  /* min-height: calc(var(--logo-h) + 24px); */ /* RIMOSSO */
   overflow:hidden;
+}
+.brand-logo{
+  height: var(--logo-h);
+  width: auto;
+  display:block;
 }
 
 /* contenitori */
@@ -552,3 +556,4 @@ select{
 
   .cart-btn{ max-width: 100%; }
 }
+
