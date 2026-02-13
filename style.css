@@ -42,12 +42,18 @@ a{ color:inherit; text-decoration:none; }
   width:100%;
   text-align:center;
   padding:10px 12px;
-  background: linear-gradient(90deg, rgba(212,175,55,0.25), rgba(212,175,55,0.10));
-  border-bottom:1px solid var(--border);
+
+  /* Oro premium */
+  background: linear-gradient(180deg, #e6c45a 0%, #d4af37 50%, #b8962e 100%);
+  color:#111; /* testo leggibile */
+
+  border-bottom:2px solid #b8962e;
+
   position:sticky;
   top:0;
   z-index:50;
-  backdrop-filter: blur(10px);
+
+  box-shadow: 0 4px 14px rgba(212,175,55,0.35);
 }
 
 /* ===== HEADER ===== */
@@ -640,3 +646,4 @@ select{
 
   .cart-btn{ max-width: 100%; }
 }
+
