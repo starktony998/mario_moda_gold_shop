@@ -12,7 +12,7 @@ const CATEGORIES = [
   "T Shirt e polo",
   "Giubbini",
   "Cinture",
-  "Capelli",
+  "Cappelli",
   "Occhiali",
   "Orologi"
 ];
@@ -43,9 +43,9 @@ function generatePlaceholders() {
 // Prezzi demo (li puoi cambiare come vuoi)
 function randomPriceForCategory(cat) {
   const ranges = {
-    "Scarpe": [49, 159],
+    "Scarpe": [180],
     "Borse": [39, 179],
-    "Camicia": [19, 79],
+    "Camicia": [80],
     "T Shirt e polo": [15, 69],
     "Giubbini": [49, 199],
     "Cinture": [15, 59],
@@ -552,3 +552,4 @@ function escapeAttr(s){ return escapeHtml(s); }
 // START
 // ==============================
 init();
+
