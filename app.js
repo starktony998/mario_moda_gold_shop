@@ -2,9 +2,12 @@
 // CONFIG
 // ==============================
 const SHOP_NAME = "Mario_Moda_Gold_Shop";
-const WHATSAPP_NUMBER = "393510901180"; // +39 (Italia) + 3510901180
+const WHATSAPP_NUMBER = "393510901180";
 const WHATSAPP_BASE = `https://wa.me/${WHATSAPP_NUMBER}?text=`;
 
+// ==============================
+// CATEGORIES
+// ==============================
 const CATEGORIES = [
   "Scarpe",
   "Borse",
@@ -18,50 +21,121 @@ const CATEGORIES = [
 ];
 
 // ==============================
-// PRODUCTS (AUTO-PLACEHOLDER: 20 per categoria)
-// - Dopo tu cambi NOME, PREZZO, IMMAGINE, DISPONIBILITÀ
+// TAGLIE: preset per categoria
 // ==============================
-function generatePlaceholders() {
-  const products = [];
-  let id = 1;
-
-  for (const cat of CATEGORIES) {
-    for (let i = 1; i <= 20; i++) {
-      products.push({
-        id: `p${id++}`,
-        name: `${cat} - Articolo ${String(i).padStart(2, "0")}`,
-        category: cat,
-        price: randomPriceForCategory(cat),
-        available: true,
-        image: "" // metti qui il path tipo "img/scarpe1.jpg"
-      });
-    }
+function getSizeOptionsForCategory(category) {
+  if (category === "Scarpe") {
+    // 36..46
+    return Array.from({ length: 11 }, (_, i) => String(36 + i));
   }
-  return products;
+  if (category === "Camicia" || category === "T Shirt e polo" || category === "Giubbini") {
+    return ["XS", "S", "M", "L", "XL", "XXL"];
+  }
+  // accessori: taglia unica
+  return ["UNICA"];
 }
 
-// Prezzi demo (li puoi cambiare come vuoi)
-function randomPriceForCategory(cat) {
-  const ranges = {
-    "Scarpe": [180],
-    "Borse": [39, 179],
-    "Camicia": [80],
-    "T Shirt e polo": [15, 69],
-    "Giubbini": [49, 199],
-    "Cinture": [15, 59],
-    "Capelli": [9, 49],
-    "Occhiali": [19, 99],
-    "Orologi": [29, 199]
-  };
-  const [min, max] = ranges[cat] || [10, 100];
-  const v = Math.floor(Math.random() * (max - min + 1)) + min;
-  return Number((v + 0.99).toFixed(2));
+// crea un oggetto sizes di default (tutte disponibili) in base alla categoria
+function defaultSizesForCategory(category) {
+  const opts = getSizeOptionsForCategory(category);
+  const obj = {};
+  opts.forEach(s => (obj[s] = true));
+  return obj;
 }
 
-const PRODUCTS = generatePlaceholders();
+// ==============================
+// 🔥 PRODOTTI MANUALI: QUI INSERISCI TUTTO TU
+// - status: "available" | "soldout" | "hidden"
+// - sizes: oggetto {taglia: true/false}
+//   * se non lo metti, lo crea automatico (tutte disponibili) in base alla categoria
+// ==============================
+const PRODUCTS = [
+  {
+    id: "p1",
+    name: "Scarpa Nike Air Max",
+    category: "Scarpe",
+    price: 89.99,
+    status: "available",
+    image: "img/scarpa1.jpeg",
+    sizes: {
+      "36": false,
+      "37": true,
+      "38": true,
+      "39": true,
+      "40": true,
+      "41": false,
+      "42": true,
+      "43": true,
+      "44": true,
+      "45": false,
+      "46": true
+    }
+  },
+  {
+    id: "p2",
+    name: "Camicia Slim Fit Bianca",
+    category: "Camicia",
+    price: 59.99,
+    status: "available",
+    image: "img/camicia1.jpeg",
+    sizes: {
+      "XS": false,
+      "S": true,
+      "M": true,
+      "L": true,
+      "XL": false,
+      "XXL": true
+    }
+  },
+  {
+    id: "p3",
+    name: "Borsa Elegance Gold",
+    category: "Borse",
+    price: 129.99,
+    status: "soldout",
+    image: "img/borsa1.jpeg"
+    // sizes non serve: sarà "UNICA" e comunque non acquistabile perché soldout
+  }
+];
+
+// ==============================
+// NORMALIZZAZIONE PRODOTTI
+// (assicura sizes coerenti e presenti)
+// ==============================
+function normalizeProducts() {
+  const allowedCats = new Set(CATEGORIES);
+
+  PRODUCTS.forEach(p => {
+    if (!allowedCats.has(p.category)) {
+      console.warn("Categoria non valida per prodotto:", p);
+    }
+
+    // status default
+    if (!p.status) p.status = "available";
+
+    // sizes default
+    if (!p.sizes || typeof p.sizes !== "object") {
+      p.sizes = defaultSizesForCategory(p.category);
+      return;
+    }
+
+    // forza le sole taglie ammesse per la categoria
+    const allowedSizes = new Set(getSizeOptionsForCategory(p.category));
+    const cleaned = {};
+    for (const s of Object.keys(p.sizes)) {
+      if (allowedSizes.has(s)) cleaned[s] = !!p.sizes[s];
+    }
+    // se manca qualche taglia ammessa, la aggiungo a true (così non si rompe nulla)
+    allowedSizes.forEach(s => {
+      if (!(s in cleaned)) cleaned[s] = true;
+    });
+    p.sizes = cleaned;
+  });
+}
 
 // ==============================
 // STATE
+// cart: { [key]: qty } dove key = "productId|size"
 // ==============================
 const state = {
   route: "home",
@@ -69,7 +143,7 @@ const state = {
   search: "",
   onlyAvailable: false,
   sort: "default",
-  cart: loadCart() // { [productId]: qty }
+  cart: loadCart()
 };
 
 // ==============================
@@ -108,7 +182,6 @@ const checkoutBtn = document.getElementById("checkoutBtn");
 const clearCartBtn = document.getElementById("clearCartBtn");
 
 const yearEl = document.getElementById("year");
-
 const homeCategories = document.getElementById("homeCategories");
 const homeFeatured = document.getElementById("homeFeatured");
 const homeWhatsBtn = document.getElementById("homeWhatsBtn");
@@ -118,6 +191,8 @@ const contactsWhatsBtn = document.getElementById("contactsWhatsBtn");
 // INIT
 // ==============================
 function init() {
+  normalizeProducts();
+
   yearEl.textContent = new Date().getFullYear();
 
   renderHome();
@@ -125,20 +200,17 @@ function init() {
   renderProducts();
   renderCart();
 
-  // routing by hash
   window.addEventListener("hashchange", syncRouteFromHash);
   syncRouteFromHash();
 
   navLinks.forEach(a => {
-    a.addEventListener("click", (e) => {
+    a.addEventListener("click", () => {
       const route = a.getAttribute("data-route");
       if (!route) return;
-      // allow default hash nav, but also update UI
       setRoute(route);
     });
   });
 
-  // search
   searchInput.addEventListener("input", () => {
     state.search = searchInput.value.trim();
     if (state.route !== "catalogo") setRoute("catalogo");
@@ -151,7 +223,6 @@ function init() {
     renderProducts();
   });
 
-  // filters
   onlyAvailableChk.addEventListener("change", () => {
     state.onlyAvailable = !!onlyAvailableChk.checked;
     renderProducts();
@@ -172,12 +243,10 @@ function init() {
     renderProducts();
   });
 
-  // cart drawer
   cartBtn.addEventListener("click", openCart);
   closeCartBtn.addEventListener("click", closeCart);
   overlay.addEventListener("click", closeCart);
 
-  // checkout
   checkoutBtn.addEventListener("click", checkoutToWhatsApp);
   clearCartBtn.addEventListener("click", () => {
     state.cart = {};
@@ -185,9 +254,12 @@ function init() {
     renderCart();
   });
 
-  // Whats buttons
-  homeWhatsBtn.addEventListener("click", () => openWhatsAppMessage("Ciao! Vorrei informazioni su Mario_Moda_Gold_Shop."));
-  contactsWhatsBtn.addEventListener("click", () => openWhatsAppMessage("Ciao! Vorrei informazioni su spedizione e disponibilità prodotti."));
+  homeWhatsBtn?.addEventListener("click", () =>
+    openWhatsAppMessage("Ciao! Vorrei informazioni.")
+  );
+  contactsWhatsBtn?.addEventListener("click", () =>
+    openWhatsAppMessage("Ciao! Vorrei informazioni su disponibilità.")
+  );
 }
 
 function syncRouteFromHash() {
@@ -207,19 +279,16 @@ function setRoute(route) {
     .filter(l => l.getAttribute("data-route") === route)
     .forEach(l => l.classList.add("is-active"));
 
-  // when entering catalog, render
-  if (route === "catalogo") {
-    renderProducts();
-  }
+  if (route === "catalogo") renderProducts();
 }
 
 // ==============================
 // HOME
 // ==============================
 function renderHome() {
-  // chips on home
-  homeCategories.innerHTML = "";
+  homeCategories && (homeCategories.innerHTML = "");
   CATEGORIES.forEach(cat => {
+    if (!homeCategories) return;
     const b = document.createElement("button");
     b.className = "chip";
     b.type = "button";
@@ -234,8 +303,9 @@ function renderHome() {
     homeCategories.appendChild(b);
   });
 
-  // featured: take some first items
-  const featured = PRODUCTS.slice(0, 4);
+  if (!homeFeatured) return;
+
+  const featured = PRODUCTS.filter(p => p.status !== "hidden").slice(0, 4);
   homeFeatured.innerHTML = "";
   featured.forEach(p => {
     const el = document.createElement("div");
@@ -248,7 +318,7 @@ function renderHome() {
       state.category = p.category;
       setRoute("catalogo");
       renderCategories();
-      renderProducts(p.id);
+      renderProducts();
       window.location.hash = "#catalogo";
     });
     homeFeatured.appendChild(el);
@@ -259,17 +329,19 @@ function renderHome() {
 // CATEGORIES SIDEBAR
 // ==============================
 function renderCategories() {
+  if (!categoryList) return;
   categoryList.innerHTML = "";
 
-  const allBtn = makeCategoryButton("Tutti", PRODUCTS.length);
+  const visibleProducts = PRODUCTS.filter(p => p.status !== "hidden");
+
+  const allBtn = makeCategoryButton("Tutti", visibleProducts.length);
   categoryList.appendChild(allBtn);
 
   for (const cat of CATEGORIES) {
-    const count = PRODUCTS.filter(p => p.category === cat).length;
+    const count = visibleProducts.filter(p => p.category === cat).length;
     categoryList.appendChild(makeCategoryButton(cat, count));
   }
 
-  // active class
   Array.from(categoryList.querySelectorAll(".cat-btn")).forEach(btn => {
     if (btn.dataset.cat === state.category) btn.classList.add("is-active");
   });
@@ -290,42 +362,30 @@ function makeCategoryButton(cat, count) {
 }
 
 // ==============================
-// PRODUCTS GRID
+// PRODUCTS GRID (con taglie)
 // ==============================
-function renderProducts(scrollToId = null) {
-  let list = [...PRODUCTS];
+function renderProducts() {
+  if (!productGrid) return;
 
-  // category
-  if (state.category !== "Tutti") {
-    list = list.filter(p => p.category === state.category);
-  }
+  let list = PRODUCTS.filter(p => p.status !== "hidden");
 
-  // availability filter
-  if (state.onlyAvailable) {
-    list = list.filter(p => p.available);
-  }
+  if (state.category !== "Tutti") list = list.filter(p => p.category === state.category);
+  if (state.onlyAvailable) list = list.filter(p => p.status === "available");
 
-  // search
-  const q = state.search.toLowerCase();
+  const q = (state.search || "").toLowerCase();
   if (q) {
-    list = list.filter(p => {
-      return (
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
-      );
-    });
+    list = list.filter(p =>
+      p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
+    );
   }
 
-  // sort
   list = sortList(list, state.sort);
 
-  // titles
   const title = state.category === "Tutti" ? "Tutti i prodotti" : state.category;
-  catalogTitle.textContent = title;
-  resultCount.textContent = String(list.length);
-  catalogSubtitle.innerHTML = `Risultati: <span id="resultCount">${list.length}</span>`;
+  if (catalogTitle) catalogTitle.textContent = title;
+  if (resultCount) resultCount.textContent = String(list.length);
+  if (catalogSubtitle) catalogSubtitle.innerHTML = `Risultati: <span id="resultCount">${list.length}</span>`;
 
-  // render
   productGrid.innerHTML = "";
   if (list.length === 0) {
     productGrid.innerHTML = `<div class="page-card" style="grid-column:1/-1;">Nessun prodotto trovato.</div>`;
@@ -335,11 +395,48 @@ function renderProducts(scrollToId = null) {
   list.forEach(p => {
     const card = document.createElement("article");
     card.className = "product-card";
-    card.id = `card-${p.id}`;
+
+    const isAvailableProduct = p.status === "available";
+
+    const sizeEntries = Object.entries(p.sizes || {});
+    const availableSizes = sizeEntries.filter(([, ok]) => ok).map(([s]) => s);
+    const hasAnySize = availableSizes.length > 0;
+
+    // default selected size: prima disponibile
+    const defaultSize = hasAnySize ? availableSizes[0] : "";
+
+    const availabilityText =
+      p.status === "soldout" ? "Esaurito" : "Disponibile";
+    const availabilityClass =
+      p.status === "available" ? "ok" : "no";
 
     const imgHtml = p.image
       ? `<img src="${escapeAttr(p.image)}" alt="${escapeAttr(p.name)}" style="width:100%;height:150px;object-fit:cover;display:block;">`
       : `<div class="product-img">FOTO</div>`;
+
+    // select taglie (disabled su non disponibili)
+    const sizeSelectId = `size-${p.id}`;
+    const sizeSelectHtml = `
+      <label class="size-label" for="${sizeSelectId}">Taglia</label>
+      <select class="size-select" id="${sizeSelectId}" data-size-select="${p.id}" ${isAvailableProduct && hasAnySize ? "" : "disabled"}>
+        ${
+          sizeEntries
+            .sort((a, b) => a[0].localeCompare(b[0], "it", { numeric: true }))
+            .map(([size, ok]) => {
+              const sel = (size === defaultSize) ? "selected" : "";
+              const dis = ok ? "" : "disabled";
+              const suffix = ok ? "" : " (non disp.)";
+              return `<option value="${escapeAttr(size)}" ${sel} ${dis}>${escapeHtml(size)}${suffix}</option>`;
+            })
+            .join("")
+        }
+      </select>
+    `;
+
+    // bottone acquistabile solo se:
+    // - prodotto available
+    // - almeno una taglia disponibile
+    const canBuy = isAvailableProduct && hasAnySize;
 
     card.innerHTML = `
       ${imgHtml}
@@ -347,14 +444,20 @@ function renderProducts(scrollToId = null) {
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-meta">
           <span>${escapeHtml(p.category)}</span>
-          <span class="product-price">€${p.price.toFixed(2)}</span>
+          <span class="product-price">€${Number(p.price).toFixed(2)}</span>
         </div>
-        <div class="availability ${p.available ? "ok" : "no"}">
-          ${p.available ? "Disponibile" : "Esaurito"}
+
+        <div class="availability ${availabilityClass}">
+          ${escapeHtml(availabilityText)}
         </div>
+
+        <div class="product-sizes">
+          ${sizeSelectHtml}
+        </div>
+
         <div class="product-actions">
-          <button class="btn btn-primary full" type="button" ${p.available ? "" : "disabled"} data-add="${p.id}">
-            ${p.available ? "Aggiungi al carrello" : "Non disponibile"}
+          <button class="btn btn-primary full" type="button" ${canBuy ? "" : "disabled"} data-add="${p.id}">
+            ${canBuy ? "Aggiungi al carrello" : "Non disponibile"}
           </button>
         </div>
       </div>
@@ -363,62 +466,73 @@ function renderProducts(scrollToId = null) {
     productGrid.appendChild(card);
   });
 
-  // bind add-to-cart
+  // bind add-to-cart (prende taglia selezionata)
   Array.from(productGrid.querySelectorAll("[data-add]")).forEach(btn => {
     btn.addEventListener("click", () => {
-      const id = btn.getAttribute("data-add");
-      addToCart(id);
+      const productId = btn.getAttribute("data-add");
+      const sel = productGrid.querySelector(`[data-size-select="${CSS.escape(productId)}"]`);
+      const size = sel ? sel.value : "UNICA";
+      addToCart(productId, size);
       openCart();
     });
   });
-
-  if (scrollToId) {
-    const el = document.getElementById(`card-${scrollToId}`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
 }
 
 function sortList(list, sort) {
   if (sort === "priceAsc") return list.sort((a,b) => a.price - b.price);
   if (sort === "priceDesc") return list.sort((a,b) => b.price - a.price);
   if (sort === "nameAsc") return list.sort((a,b) => a.name.localeCompare(b.name, "it"));
-  return list; // default
+  return list;
 }
 
 // ==============================
-// CART
+// CART (con taglia)
 // ==============================
-function addToCart(productId) {
+function cartKey(productId, size) {
+  return `${productId}|${size}`;
+}
+
+function parseCartKey(key) {
+  const [id, ...rest] = String(key).split("|");
+  return { id, size: rest.join("|") || "UNICA" };
+}
+
+function addToCart(productId, size) {
   const p = PRODUCTS.find(x => x.id === productId);
-  if (!p || !p.available) return;
+  if (!p || p.status !== "available") return;
 
-  state.cart[productId] = (state.cart[productId] || 0) + 1;
+  const sizes = p.sizes || defaultSizesForCategory(p.category);
+  if (!sizes[size]) return; // taglia non disponibile
+
+  const key = cartKey(productId, size);
+  state.cart[key] = (state.cart[key] || 0) + 1;
   persistCart();
   renderCart();
 }
 
-function removeFromCart(productId) {
-  delete state.cart[productId];
+function removeFromCart(key) {
+  delete state.cart[key];
   persistCart();
   renderCart();
 }
 
-function changeQty(productId, delta) {
-  const current = state.cart[productId] || 0;
+function changeQty(key, delta) {
+  const current = state.cart[key] || 0;
   const next = current + delta;
   if (next <= 0) {
-    removeFromCart(productId);
+    removeFromCart(key);
     return;
   }
-  state.cart[productId] = next;
+  state.cart[key] = next;
   persistCart();
   renderCart();
 }
 
 function cartItems() {
-  return Object.entries(state.cart).map(([id, qty]) => {
+  return Object.entries(state.cart).map(([key, qty]) => {
+    const { id, size } = parseCartKey(key);
     const p = PRODUCTS.find(x => x.id === id);
-    return { product: p, qty };
+    return { key, product: p, size, qty };
   }).filter(x => !!x.product);
 }
 
@@ -431,29 +545,31 @@ function cartTotal() {
 }
 
 function renderCart() {
+  if (!cartItemsEl) return;
+
   const items = cartItems();
   cartItemsEl.innerHTML = "";
 
   if (items.length === 0) {
     cartItemsEl.innerHTML = `<div class="page-card">Il carrello è vuoto.</div>`;
   } else {
-    items.forEach(({ product, qty }) => {
+    items.forEach(({ key, product, size, qty }) => {
       const row = document.createElement("div");
       row.className = "cart-item";
       row.innerHTML = `
         <div class="cart-item-top">
           <div>
-            <div class="cart-item-name">${escapeHtml(product.name)}</div>
+            <div class="cart-item-name">${escapeHtml(product.name)} <span style="opacity:.8;">(Taglia: ${escapeHtml(size)})</span></div>
             <div class="cart-item-meta">${escapeHtml(product.category)} • €${product.price.toFixed(2)}</div>
           </div>
-          <button class="btn btn-ghost" type="button" data-remove="${product.id}" title="Rimuovi">Rimuovi</button>
+          <button class="btn btn-ghost" type="button" data-remove="${escapeAttr(key)}" title="Rimuovi">Rimuovi</button>
         </div>
 
         <div class="cart-item-actions">
           <div class="qty">
-            <button type="button" data-dec="${product.id}">-</button>
+            <button type="button" data-dec="${escapeAttr(key)}">-</button>
             <span>${qty}</span>
-            <button type="button" data-inc="${product.id}">+</button>
+            <button type="button" data-inc="${escapeAttr(key)}">+</button>
           </div>
           <strong>€${(product.price * qty).toFixed(2)}</strong>
         </div>
@@ -461,7 +577,6 @@ function renderCart() {
       cartItemsEl.appendChild(row);
     });
 
-    // bind
     cartItemsEl.querySelectorAll("[data-remove]").forEach(b => {
       b.addEventListener("click", () => removeFromCart(b.getAttribute("data-remove")));
     });
@@ -473,8 +588,8 @@ function renderCart() {
     });
   }
 
-  cartCountEl.textContent = String(cartCount());
-  cartTotalEl.textContent = `€${cartTotal().toFixed(2)}`;
+  if (cartCountEl) cartCountEl.textContent = String(cartCount());
+  if (cartTotalEl) cartTotalEl.textContent = `€${cartTotal().toFixed(2)}`;
 }
 
 // ==============================
@@ -487,10 +602,7 @@ function checkoutToWhatsApp() {
     return;
   }
 
-  const lines = items.map(x => {
-    return `- ${x.product.name} (x${x.qty})`;
-  });
-
+  const lines = items.map(x => `- ${x.product.name} (Taglia: ${x.size}) (x${x.qty})`);
   const text =
     `Ciao, vorrei acquistare su ${SHOP_NAME} e vorrei:\n` +
     lines.join("\n");
@@ -507,15 +619,15 @@ function openWhatsAppMessage(message) {
 // UI: CART DRAWER
 // ==============================
 function openCart() {
-  overlay.classList.remove("hidden");
-  cartDrawer.classList.remove("hidden");
-  cartDrawer.setAttribute("aria-hidden", "false");
+  overlay?.classList.remove("hidden");
+  cartDrawer?.classList.remove("hidden");
+  cartDrawer?.setAttribute("aria-hidden", "false");
 }
 
 function closeCart() {
-  overlay.classList.add("hidden");
-  cartDrawer.classList.add("hidden");
-  cartDrawer.setAttribute("aria-hidden", "true");
+  overlay?.classList.add("hidden");
+  cartDrawer?.classList.add("hidden");
+  cartDrawer?.setAttribute("aria-hidden", "true");
 }
 
 // ==============================
@@ -552,4 +664,5 @@ function escapeAttr(s){ return escapeHtml(s); }
 // START
 // ==============================
 init();
+
 
