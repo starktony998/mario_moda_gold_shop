@@ -59,16 +59,16 @@ const PRODUCTS = [
     image: "img/scarpa1.jpeg",
     sizes: {
       "36": false,
-      "37": true,
-      "38": true,
-      "39": true,
+      "37": false,
+      "38": false,
+      "39": false,
       "40": true,
       "41": false,
-      "42": true,
+      "42": false,
       "43": true,
-      "44": true,
+      "44": false,
       "45": false,
-      "46": true
+      "46": false
     }
   },
   {
@@ -664,6 +664,7 @@ function escapeAttr(s){ return escapeHtml(s); }
 // START
 // ==============================
 init();
+
 
 
 
