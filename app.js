@@ -52,9 +52,9 @@ function defaultSizesForCategory(category) {
 const PRODUCTS = [
   {
     id: "p1",
-    name: "Scarpa Nike Air Max",
+    name: "Scarpa 1",
     category: "Scarpe",
-    price: 89.99,
+    price: 180,00,
     status: "available",
     image: "img/scarpa1.jpeg",
     sizes: {
@@ -664,5 +664,6 @@ function escapeAttr(s){ return escapeHtml(s); }
 // START
 // ==============================
 init();
+
 
 
